@@ -9,7 +9,10 @@ def _():
     import marimo as mo
     import cv2
     import time
-    return cv2, mo, time
+
+    import threading
+    import matplotlib.pyplot as plt
+    return cv2, mo, plt, threading, time
 
 
 @app.cell
@@ -27,33 +30,64 @@ def _(cv2, time):
 
 
 @app.cell
-def _(mo, take_picture):
+def _(mo, plt, take_picture):
     mo.stop(True, "cannot take photo")
 
-    import matplotlib.pyplot as plt
-
     plt.imshow(take_picture())
-    return (plt,)
+    return
 
 
 @app.cell
 def _(cv2, mo):
     mo.stop(True, "cannot take video")
 
+
     cap = cv2.VideoCapture(0)
     while cap.isOpened():
-        ret, image = cap.read()
-        image = cv2.resize(
-            image, None, fx=0.25, fy=0.25, interpolation=cv2.INTER_AREA
-        )
-        cv2.imshow("image", image)
+        _, frame = cap.read()
+        cv2.imshow("image", frame)
 
         k = cv2.waitKey(30) & 0xFF  # press ESC to exit
         if k == 27 or cv2.getWindowProperty("image", 0) < 0:
             break
     cv2.destroyAllWindows()
     cap.release()
-    return cap, image, k, ret
+    return cap, frame, k
+
+
+@app.cell
+def _(cv2, mo, threading):
+    def capture_video(button):
+        cap = cv2.VideoCapture(0)
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                raise Exception("webcam not available")
+            frame = cv2.flip(frame, 1)  # if your camera reverses your image
+            cv2.imshow("image", frame)
+            if not button.value:
+                cap.release()
+                cv2.destroyAllWindows()
+
+
+    button = mo.ui.button(label="Record", on_click=lambda value: not value)
+
+    thread = threading.Thread(target=capture_video, args=(button,))
+    thread.start()
+
+    button
+    return button, capture_video, thread
+
+
+@app.cell
+def _(button):
+    button
+    return
+
+
+@app.cell
+def _():
+    return
 
 
 if __name__ == "__main__":
