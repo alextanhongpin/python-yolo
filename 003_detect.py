@@ -114,7 +114,10 @@ def _(mo):
 @app.cell
 def _(DeepFace, faces):
     dfs = DeepFace.find(
-        img_path=faces[0]["face"], db_path="images", enforce_detection=False
+        img_path=faces[0]["face"],
+        db_path="images",
+        enforce_detection=False,
+        align=True,
     )
     dfs
     return (dfs,)
@@ -145,7 +148,11 @@ def _(Counter, pathlib, top_k):
 def _(Counter, DeepFace, pathlib):
     def recognise_face(im, k=5):
         dfs = DeepFace.find(
-            img_path=im, db_path="images", enforce_detection=False, silent=True
+            img_path=im,
+            db_path="images",
+            enforce_detection=False,
+            silent=True,
+            align=True,
         )
         top_k = dfs[0].sort_values(by="distance", ascending=True).head(k)
         return Counter(
