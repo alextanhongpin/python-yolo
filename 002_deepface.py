@@ -48,6 +48,8 @@ def _(DeepFace):
 def _(result):
     import matplotlib.pyplot as plt
 
+    plt.xticks([])
+    plt.yticks([])
     plt.imshow(result[0]["face"])
     return (plt,)
 
@@ -74,7 +76,16 @@ def _(Image, plt, results):
         axs = axs.flatten()
         for index, row in df.iterrows():
             img = Image.open(row.identity)
-            img = img.crop((row.target_x, row.target_y, row.target_x+row.target_w, row.target_y + row.target_h))
+            img = img.crop(
+                (
+                    row.target_x,
+                    row.target_y,
+                    row.target_x + row.target_w,
+                    row.target_y + row.target_h,
+                )
+            )
+            axs[index].set_xticks([])
+            axs[index].set_yticks([])
             axs[index].imshow(img)
         plt.show()
     return axs, df, img, index, row
